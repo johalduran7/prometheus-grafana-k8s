@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: image-app
+  template:
+    metadata:
+      labels:
+        app: image-app
+    spec:
+      containers:
+        - name: image-app
+          image: john/image-app:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PGHOST
+              value: postgres
+            - name: PGUSER
+              value: postgres
+            - name: PGPASSWORD
+              value: password
+            - name: PGDATABASE
+              value: images
+            - name: PGPORT
+              value: "5432"
