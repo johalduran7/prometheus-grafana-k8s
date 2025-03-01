@@ -1,0 +1,4 @@
+image:
+  repository: <your-registry-url>/k8s-app  # Replace in your override file
+  tag: latest
+  pullPolicy: IfNotPresent

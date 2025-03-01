@@ -1,4 +1,3 @@
-# Ignore everything by default
 *
 !**/
 *.md
@@ -6,7 +5,8 @@
 *key_*
 *.pem
 
-# Whitelist specific file types
+
+
 !*.tf
 !*.py
 !*.yaml
@@ -16,16 +16,15 @@
 !*.txt
 !*.sh
 !Dockerfile
-CoPilot/**/*
-!CoPilot/**/Dockerfile
 !.gitkeep
 !README.md
 
-# Whitelist the .gitignore file itself
+
 !.gitignore
 
-# Optional: Whitelist directories (to allow file inclusion in them)
 !*/
 .terraform/
-modules/lambda/lambda_layer/my-layer/*
-modules/beanstalk/sample-application/*
+app/node_modules/
+kubernetes_doc.yaml
+values.override.yaml
+
