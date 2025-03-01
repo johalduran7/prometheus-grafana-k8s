@@ -18,6 +18,8 @@
 !Dockerfile
 !.gitkeep
 !README.md
+!app.js
+!package*.json
 
 
 !.gitignore
