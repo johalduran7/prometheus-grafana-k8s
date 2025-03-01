@@ -19,6 +19,7 @@
 CoPilot/**/*
 !CoPilot/**/Dockerfile
 !.gitkeep
+!README.md
 
 # Whitelist the .gitignore file itself
 !.gitignore
