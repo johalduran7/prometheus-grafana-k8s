@@ -1,0 +1,17 @@
+namespace: prometheus-grafana-k8s
+
+replicaCount: 1
+
+image:
+  repository: postgres
+  tag: "15"
+  
+service:
+  type: ClusterIP
+  name: postgres-service
+  port: "5432"
+
+env:
+  POSTGRES_DB: people
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: "youpassword"

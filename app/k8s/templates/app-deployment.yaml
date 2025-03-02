@@ -1,30 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: image-app
+  name: k8s-app
+  namespace: {{ .Values.namespace }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: image-app
+      app: k8s-app
   template:
     metadata:
       labels:
-        app: image-app
+        app: k8s-app
     spec:
+      imagePullSecrets:
+        - name: ecr-registry-credentials
       containers:
-        - name: image-app
-          image: john/image-app:latest
+        - name: k8s-app
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
-            - containerPort: 3000
+            - containerPort: {{ .Values.container.targetPort }}
           env:
             - name: PGHOST
-              value: postgres
+              value: {{ .Values.env.PGHOST }}
             - name: PGUSER
-              value: postgres
+              value: {{ .Values.env.PGUSER }}
             - name: PGPASSWORD
-              value: password
+              value: "{{ .Values.env.PGPASSWORD }}"
             - name: PGDATABASE
-              value: images
+              value: {{ .Values.env.PGDATABASE }}
             - name: PGPORT
               value: "5432"
