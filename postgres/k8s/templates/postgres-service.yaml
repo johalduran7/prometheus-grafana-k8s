@@ -8,6 +8,6 @@ spec:
     app: postgres
   ports:
     - protocol: TCP
-      port: {{ .Values.service.port }}
+      port: 5432
       targetPort: 5432
-  type: {{ .Values.service.type }}
+  type: ClusterIP

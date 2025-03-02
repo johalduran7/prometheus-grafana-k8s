@@ -10,4 +10,4 @@ spec:
     - protocol: TCP
       port: {{ .Values.service.port }} # This is the service port (what clients use to talk to the service)
       targetPort: {{ .Values.service.targetPort }} # This is the container port (the port inside your pod/app)
-  type: {{ .Values.service.type }}
+  type: NodePort

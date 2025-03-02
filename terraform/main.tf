@@ -36,6 +36,7 @@ resource "null_resource" "build_and_push_k8s-app-image" {
   triggers = {
     # Rebuild the image if the Dockerfile changes
     dockerfile_hash = filemd5("../app//Dockerfile")
+    app_js_hash     = filemd5("../app/app.js")
   }
 
   provisioner "local-exec" {

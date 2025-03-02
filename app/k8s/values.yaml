@@ -11,7 +11,6 @@ container:
   targetPort: "3000"
 
 service:
-  type: NodePort
   port: "80"
   targetPort: "3000"
 

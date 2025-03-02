@@ -101,6 +101,21 @@ john@john-VirtualBox:~/prometheus-grafana-k8s$
 # As you can see, the port 32442 was assigned to minikube and the node can be accesed from http://192.168.49.2:32442 in the webbrowser of your    local machine
 
 
+# When making changes   in the app.js just do the following:
+# apply changes  on terraform, it'll auto-detect changes in teh files app.js or Dockerfile,
+# running helm upgrade won't work becasue nothing changed in the deployment or template itself, also the tag, it's still latest, so, you have to run a rollout:
+john@john-VirtualBox:~/prometheus-grafana-k8s$ kubectl rollout restart deployment k8s-app -n prometheus-grafana-k8s
+deployment.apps/k8s-app restarted
+john@john-VirtualBox:~/prometheus-grafana-k8s$ kubectl get pod
+NAME                       READY   STATUS              RESTARTS   AGE
+k8s-app-547dbf6dcc-2n7bk   1/1     Running             0          60m
+k8s-app-68456754bb-mvb9g   0/1     ContainerCreating   0          3s
+postgres-7c9886f7d-tr8bx   1/1     Running             0          124m
+john@john-VirtualBox:~/prometheus-grafana-k8s$ 
+
+# The IP mapping won't change, just refresh the page on the web browser.
+
+# At this point, we can see the app, open pgadmin, and run queries to the db
 
 
 kubectl apply -f app/k8s/

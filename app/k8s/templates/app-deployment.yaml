@@ -31,3 +31,4 @@ spec:
               value: {{ .Values.env.PGDATABASE }}
             - name: PGPORT
               value: "5432"
+              
