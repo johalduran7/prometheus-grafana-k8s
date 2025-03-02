@@ -1,7 +1,7 @@
 # Prometheus-Grafana-K8s Project
 
 ## Minikube Setup
-Requirements:
+Prerequisites:
 - Minikube + any hypervisor such as Virtualbox or Hyperkit.
 - If you're to run Minikube on VirtualBox, make sure the resources are set to minimum:
   - 8GB of RAM
@@ -35,7 +35,8 @@ kubectl apply -f ./k8s/namespace.yml # or just $ kubectl reate namespace prometh
 # install Helm Charts per service(folder)
 helm install k8s-postgres ./postgres/k8s -f ./postgres/k8s/values.override.yaml -n prometheus-grafana-k8s 
 
-#NOTE: you can define the namespace as the current if you want: kubectl config set-context --current --namespace=prometheus-grafana-k8s
+#NOTE: you can define the namespace as the current if you want:
+ kubectl config set-context --current --namespace=prometheus-grafana-k8s
 
 # If your image is on ECR, make sure you log into Registry or create a secret
 ## you have 2 options:
@@ -118,6 +119,84 @@ john@john-VirtualBox:~/prometheus-grafana-k8s$
 # At this point, we can see the app, open pgadmin, and run queries to the db
 
 
-kubectl apply -f app/k8s/
+# Deploying kubernetes dashboard
+# Create the dashboard.crt
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout dashboard.key -out dashboard.crt -subj "/CN=<your-dashboard-domain>/O=<your-organization>"
+# create secret
+kubectl create secret tls kubernetes-dashboard-tls --cert=dashboard.crt --key=dashboard.key --namespace=prometheus-grafana-k8s
+# For simplicity, I'm not creating a separate namespace for the k8s dashboard
+helm install k8s-dashboard ./k8s-dashboard/k8s -f ./k8s-dashboard/k8s/values.override.yaml -n prometheus-grafana-k8s
+#access the dashboard:
+## get the token:
+kubectl create token admin-user -n prometheus-grafana-k8s
+## paste the token into the access dashboard
+
+# Leveragin Helm to install Prometheus
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+# Validate the instalation of the repot:
+$ helm repo list -n prometheus-grafana-k8s
+NAME                	URL                                               
+prometheus-community	https://prometheus-community.github.io/helm-charts
+
+# Make sure the file ./prometheus/k8s/values-prometheus.yaml is configured
+
+# Install prometheus
+helm install k8s-prometheus prometheus-community/prometheus -f ./prometheus/k8s/values-prometheus.yaml
+
+#- The server is up and running, you can access the Prometheus UI by forwarding the port or just accessing minikube service endpoint as long as you defined a nodePort for Prometheus
+$  minikube service list
+|------------------------|-----------------------------------------|--------------|---------------------------|
+|       NAMESPACE        |                  NAME                   | TARGET PORT  |            URL            |
+|------------------------|-----------------------------------------|--------------|---------------------------|
+| prometheus-grafana-k8s | k8s-prometheus-server                   | http/80      | http://192.168.49.2:30090 |
+
+
+
+
+# to upgrade:
+helm upgrade k8s-prometheus prometheus-community/prometheus -f ./prometheus/k8s/values-prometheus.yaml
+
+
+# Install Grafana:
+			- Intall Grafana leveraging HELM
+				- search for grafana repos:	
+				$ helm search hub grafana
+
+				- install and update:
+					$	helm repo add grafana https://grafana.github.io/helm-charts 
+						helm repo update
+				- install grafana:
+					$ helm install k8s-grafana grafana/grafana -f ./grafana/k8s/values-grafana.yaml -n prometheus-grafana-k8s
+
+				- create a secret for Grafana:
+					$ kubectl get secret --namespace prometheus-grafana-k8s k8s-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
+
+					k8s-grafana is the name of the service
+
+					grab the pass and log into Grafana
+
+					user: admin
+					password: 5extR2eXI6psfxCdSjhSdw8NOSYZJOqvKpxnwOUG
+
+
+				- add Prometheus as the data source:
+					- On the Welcome to Grafana Home page, click Add your first data source:
+						Select Prometheus as the data source
+
+					- Add the k8s-prometheus-server node ip to the Connection, then click on Save:
+						| prometheus-grafana-k8s | k8s-prometheus-server                   | http/80      | http://192.168.49.2:30090 |
+
+					- Grafana Dashboard:
+						- get the dashboard id from https://grafana.com/grafana/dashboards/
+						- look for "kubernetes cluster monitoring (via prometheus)"
+					- then on your own Grafana go to Dashboard->New->Import
+					- add the Grafana Dashboard id
+
+					- select Prometheus as the datasource and Import
+				
+
+
 kubectl apply -f prometheus/k8s/
 kubectl apply -f grafana/k8s/
