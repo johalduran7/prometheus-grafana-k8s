@@ -117,7 +117,182 @@ john@john-VirtualBox:~/prometheus-grafana-k8s$
 # The IP mapping won't change, just refresh the page on the web browser.
 
 # At this point, we can see the app, open pgadmin, and run queries to the db
+-----------------------------------------------
+# Install Ingress Controller in the node cluster
+  - Ingress acts as a DNS where the domain routes the traffic to the internal service (my-app.com). it defines the paths. You map the domain to the internal ip address of the pods.
 
+- Using Nginx for Ingress Connnntroller
+minikube addons enable ingress
+
+It's installed in the namespace Ingress:
+$ kubectl get namespace
+NAME                     STATUS   AGE
+default                  Active   179d
+
+$ kubectl get pod -n ingress-nginx
+NAME                                        READY   STATUS      RESTARTS      AGE
+ingress-nginx-admission-create-sfxbb        0/1     Completed   0             24h
+ingress-nginx-admission-patch-kn8pd         0/1     Completed   1             24h
+ingress-nginx-controller-768f948f8f-x2l2n   1/1     Running     1 (12h ago)   24h
+
+
+# Added ingress to ingress/k8s-app-ingress.yaml
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: k8s-app-ingress
+  namespace: prometheus-grafana-k8s
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: johnk8sapp.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: k8s-app
+            port:
+              number: 80
+
+$ helm install k8s-ingress ingress/ -n prometheus-grafana-k8s
+
+# Check the   ip assigned to the ingress:
+$ minikub service list
+
+
+# Add the domain to the hosts
+echo -e "192.168.4ss9.2\tjohnk8sapp.com" | sudo tee -a /etc/hosts
+
+# now you can access:
+http://johnk8sapp.com/s
+
+# same for the rest of the GUIs
+ kubectl get ingress
+NAME                        CLASS   HOSTS                   ADDRESS        PORTS   AGE
+k8s-app-ingress             nginx   johnk8sapp.com          192.168.49.2   80      16s
+k8s-grafana-ingress         nginx   johnk8sgrafana.com      192.168.49.2   80      16s
+k8s-pgadmin-ingress         nginx   johnk8spgadmin.com      192.168.49.2   80      16s
+k8s-prometheus-ui-ingress   nginx   johnk8sprometheus.com   192.168.49.2   80      16s
+
+
+echo -e "192.168.49.2\tjohnk8spgadmin.com" | sudo tee -a /etc/hosts
+echo -e "192.168.49.2\tjohnk8sprometheus.com" | sudo tee -a /etc/hosts
+echo -e "192.168.49.2\tjohnk8sgrafana.com" | sudo tee -a /etc/hosts
+-----------------------------------------------
+
+# Installing Grafana and Prometheus using the chart kube-prometheus-stack
+helm install k8s-kube-prom-stack prometheus-community/kube-prometheus-stack \
+  --namespace prometheus-grafana-k8s \
+  -f ./prometheus-grafana-stack/values-kube-stack.yaml
+
+
+this will be the name of the release that you have to use in the serviceMonitor for the prometheus to scrap metrics
+
+k8s-kube-prom-stack
+
+-------------------------------------------------------
+# At this point we have the app, postgres+pgadmin, Prometheus,   and Grafana installed. So   far, only the app is configured for Prometheus to scrap data from the     nodejs k8s-app. The components need a way to export their metrics and there are several ways to do so:
+1. Export metrics in the application using a Prometheus client, like I did on nodejs app using the library promClient
+2. Add Prometheus Annotations	The app is deployed in Kubernetes and exposes metrics.This works in conjunction with Prometheus discovers to tell prometheus where to scrap metrics from, however, the component has to export the metircs in prometheus format
+  annotations:
+    prometheus.io/scrape: "true"  # Enable scraping for this pod
+    prometheus.io/port: "3000"    # Port where metrics are exposed
+    prometheus.io/path: "/metrics" # Path to the metrics endpoint
+3. Use a Sidecar container. If the container cannot be modified, like postgres, you can add a sidecar container to the pod to export the metrics
+4. Use a Metrics Exporter. If the component doesn not natively support Prometheus metrics, you can deploy a metrics exporter that collects metrics from the component and exposes them in Prometheus format.
+  - Popular exporters:
+      - Node Exporter: for node-level metrics (e.g., CPU, memory, disk usage)
+      - cAdvisor: for container-level-metrics
+      - Postgres Exporter: 
+      - Reds exporter
+5. Use ServiceMonitors/PodMonitors	You're using the Prometheus Operator in Kubernetes.
+6. Manually Configure Scrape Jobs	You're not using Kubernetes or need fine-grained control over scraping.
+7. Use Pushgateway	For short-lived or batch jobs that cannot be scraped directly.
+
+## installing exporter for postgres
+## https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus-postgres-exporter/values.yaml
+
+$ helm install k8s-postgres-exporter prometheus-community/prometheus-postgres-exporter -f ./exporters/postgres-exporter-values.override.yaml -n prometheus-grafana-k8s
+
+# we can access the webpage of exporter by forwarding the port of the service
+kubectl get svc | grep -i exporter
+k8s-postgres-exporter-prometheus-postgres-exporter   ClusterIP   10.109.239.117   <none>        80/TCP         17m
+
+# the port 9187 is any available   port in the host
+
+$ kubectl port-forward svc/k8s-postgres-exporter-prometheus-postgres-exporter 9187:80 
+Forwarding from 127.0.0.1:9187 -> 9187
+Forwarding from [::1]:9187 -> 9187
+Handling connection for 9187
+
+check if the exporter detected postgres is up, look for "pg_up"
+http://localhost:9187/metrics
+
+you should see something along these lines: 
+# HELP pg_up Whether the last scrape of metrics from PostgreSQL was able to connect to the server (1 for yes, 0 for no).
+# TYPE pg_up gauge
+pg_up 1
+
+
+-- Now we have to deplloy a  serviceMonitor and in order to do this, we can leverage the kube-promethes-stack config, it's already included.
+
+#added to postgres-exporter-values.yaml
+
+serviceMonitor:
+  # When set true then use a ServiceMonitor to configure scraping
+  enabled: true
+  labels:
+    release: prometheus
+
+-- confirm it was deployed:
+$ kubectl get servicemonitor
+NAME                                                 AGE
+k8s-kube-prom-stack-grafana                          84m
+k8s-kube-prom-stack-kube-p-alertmanager              84m
+k8s-kube-prom-stack-kube-p-apiserver                 84m
+k8s-kube-prom-stack-kube-p-coredns                   84m
+k8s-kube-prom-stack-kube-p-kube-controller-manager   84m
+k8s-kube-prom-stack-kube-p-kube-etcd                 84m
+k8s-kube-prom-stack-kube-p-kube-proxy                84m
+k8s-kube-prom-stack-kube-p-kube-scheduler            84m
+k8s-kube-prom-stack-kube-p-kubelet                   84m
+k8s-kube-prom-stack-kube-p-operator                  84m
+k8s-kube-prom-stack-kube-p-prometheus                84m
+k8s-kube-prom-stack-kube-state-metrics               84m
+k8s-kube-prom-stack-prometheus-node-exporter         84m
+k8s-postgres-exporter-prometheus-postgres-exporter   5m36s
+
+
+### add serviceMonitor for k8s-app
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: k8s-app-monitor
+  namespace: prometheus-grafana-k8s
+  labels:
+    release: k8s-kube-prom-stack # This links it to the Prometheus release
+spec:
+  selector:
+    matchLabels:
+      app: k8s-app
+  endpoints:
+    - port: metrics  # This should match your Service's port name, not just the number
+      path: "/metrics"
+      interval: 30s
+and added the label too the service as well as the port name so that the selector of servicemonitor can find the service:
+
+
+$ kubectl apply -f ./exporters/k8s-app-exporter-values.yaml
+
+-----------------------------
+# Install Kubernetes Dashboard
+
+I'll leave this one for the last
 
 # Deploying kubernetes dashboard
 # Create the dashboard.crt
@@ -131,7 +306,10 @@ helm install k8s-dashboard ./k8s-dashboard/k8s -f ./k8s-dashboard/k8s/values.ove
 kubectl create token admin-user -n prometheus-grafana-k8s
 ## paste the token into the access dashboard
 
-# Leveragin Helm to install Prometheus
+-------------------------------------------------------
+
+------------------------------------------------------
+# Leveraging Helm to install Prometheus
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 
@@ -141,6 +319,8 @@ NAME                	URL
 prometheus-community	https://prometheus-community.github.io/helm-charts
 
 # Make sure the file ./prometheus/k8s/values-prometheus.yaml is configured
+
+
 
 # Install prometheus
 helm install k8s-prometheus prometheus-community/prometheus -f ./prometheus/k8s/values-prometheus.yaml
@@ -196,7 +376,4 @@ helm upgrade k8s-prometheus prometheus-community/prometheus -f ./prometheus/k8s/
 
 					- select Prometheus as the datasource and Import
 				
-
-
-kubectl apply -f prometheus/k8s/
-kubectl apply -f grafana/k8s/
+------------------------------------------------------------------
