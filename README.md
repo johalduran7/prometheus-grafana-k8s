@@ -360,6 +360,8 @@ This project deploys the following components:
     ```bash
     kubectl get servicemonitor
     ```
+    Now, you add a nice dashboard from https://grafana.com/grafana/dashboards/455-postgres-overview/
+
     ![Setup](./resources/grafana_k8s.jpg)
 
     **Add ServiceMonitor for Node.js App:**
@@ -390,34 +392,40 @@ This project deploys the following components:
     ```bash
     kubectl apply -f ./exporters/k8s-app-exporter-values.yaml
     ```
+    You can leverage Loki to visualize the metrics or logs from the app
+
     ![Setup](./resources/metrics_k8s-app.jpg)
     
 13. **Install Kubernetes Dashboard:**
 
-    Add the Helm repository:
 
+    Install:
     ```bash
-    helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
     ```
 
-    Install the chart:
-
+    Create Ingress:
     ```bash
-    helm install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard -n prometheus-grafana-k8s
+    kubectl apply -f ingress/templates/k8s-dashboard.yaml -n kubernetes-dashboard
     ```
 
-    Forward the port:
-
+    Add the dns rrecord
     ```bash
-    kubectl port-forward svc/kubernetes-dashboard-web 8000:8000
+    echo -e "192.168.49.2\tjohnk8sdashboard.com" | sudo tee -a /etc/hosts
+    ```
+
+    Create a TSL:
+    ```bash
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout dashboard.key -out dashboard.crt -subj "/CN=<your-dashboard-domain>/O=<your-organization>"
     ```
 
     Create a service account, role, and token:
-
     ```bash
-    kubectl get serviceaccount kubernetes-dashboard-web -n prometheus-grafana-k8s
-    kubectl create clusterrolebinding kubernetes-dashboard-web-role-binding --clusterrole=admin --user=system:serviceaccount:kubernetes-dashboard-web:kubernetes-dashboard-web -n prometheus-grafana-k8s
-    kubectl create token kubernetes-dashboard-web -n prometheus-grafana-k8s
+    kubectl create sa kube-ds-admin -n kubernetes-dashboard
+    kubectl create clusterrolebinding kube-ds-admin-role-binding --clusterrole=admin --user=system:serviceaccount:kubernetes-dashboard:kube-ds-admin
+    kubectl create token kube-ds-admin -n kubernetes-dashboard
     ```
 
-    Copy the token and paste it into the login page at `http://localhost:8000`.
+    Access the dashboard on the domain you defined in the ingress. e.g. johnk8sdashboard.com
+
+    ![Setup](./resources/kubernetes-dashboard.jpg)
