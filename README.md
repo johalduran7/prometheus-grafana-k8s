@@ -21,6 +21,17 @@ This project deploys the following components:
 -   **PostgreSQL:** A robust relational database management system used to persist image data.
 -   **Prometheus:** A powerful monitoring and alerting toolkit that collects metrics from the deployed applications and infrastructure.
 -   **Grafana:** A data visualization and monitoring tool that provides dashboards to visualize metrics collected by Prometheus.
+<table>
+  <tr>
+    <td><img src="./resources/nodejs_k8s_app.jpg" alt="Setup" width="200"></td>
+    <td><img src="./resources/nodejs_k8s_app.jpg" alt="Setup" width="200"></td>
+  </tr>
+  <tr>
+    <td><img src="./resources/nodejs_k8s_app.jpg" alt="Setup" width="200"></td>
+    <td><img src="./resources/nodejs_k8s_app.jpg" alt="Setup" width="200"></td>
+  </tr>
+</table>
+
 | ![Setup](./resources/nodejs_k8s_app.jpg) | ![Setup](./resources/grafana_k8s.jpg) |
 |---|---|
 | ![Setup](./resources/metrics_k8s-app.jpg) | ![Setup](./resources/kubernetes-dashboard.jpg) |
