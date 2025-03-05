@@ -24,17 +24,11 @@ This project deploys the following components:
 <table>
   <tr>
     <td><img src="./resources/nodejs_k8s_app.jpg" alt="Setup" width="200"></td>
-    <td><img src="./resources/nodejs_k8s_app.jpg" alt="Setup" width="200"></td>
-  </tr>
-  <tr>
-    <td><img src="./resources/nodejs_k8s_app.jpg" alt="Setup" width="200"></td>
-    <td><img src="./resources/nodejs_k8s_app.jpg" alt="Setup" width="200"></td>
+    <td><img src="./resources/grafana_k8s.jpg" alt="Setup" width="200"></td>
+    <td><img src="./resources/metrics_k8s-app.jpg" alt="Setup" width="200"></td>
+    <td><img src="./resources/kubernetes-dashboard.jpg" alt="Setup" width="200"></td>
   </tr>
 </table>
-
-| ![Setup](./resources/nodejs_k8s_app.jpg) | ![Setup](./resources/grafana_k8s.jpg) |
-|---|---|
-| ![Setup](./resources/metrics_k8s-app.jpg) | ![Setup](./resources/kubernetes-dashboard.jpg) |
 
 ### How to Run
 
