@@ -9,10 +9,19 @@ app.use(express.json());
 const register = new promClient.Registry();
 promClient.collectDefaultMetrics({ register });
 
+// HTTP request counter
 const httpRequestCounter = new promClient.Counter({
   name: 'http_requests_total',
   help: 'Total number of HTTP requests',
   labelNames: ['method', 'route', 'status'],
+  registers: [register],
+});
+
+// Database interaction counters
+const dbOperationCounter = new promClient.Counter({
+  name: 'db_operations_total',
+  help: 'Total number of database operations',
+  labelNames: ['operation'],
   registers: [register],
 });
 
@@ -39,7 +48,11 @@ client.connect().then(async () => {
 });
 
 app.use((req, res, next) => {
-  httpRequestCounter.inc({ method: req.method, route: req.route ? req.route.path : req.path });
+  httpRequestCounter.inc({ 
+    method: req.method, 
+    route: req.route ? req.route.path : req.path,
+    status: res.statusCode.toString() // capture status too
+  });
   next();
 });
 
@@ -49,6 +62,8 @@ app.get('/metrics', async (req, res) => {
 });
 
 app.get('/', async (req, res) => {
+  dbOperationCounter.inc({ operation: 'select' });
+
   const result = await client.query('SELECT * FROM people ORDER BY id DESC');
   const people = result.rows;
 
@@ -158,6 +173,8 @@ app.get('/', async (req, res) => {
 
 app.post('/submit', async (req, res) => {
   const { name, phone, email } = req.body;
+  dbOperationCounter.inc({ operation: 'insert' });
+
   await client.query('INSERT INTO people (name, phone, email) VALUES ($1, $2, $3)', [name, phone, email]);
   res.redirect('/');
 });
@@ -166,13 +183,17 @@ app.post('/update', async (req, res) => {
   const { id, field, value } = req.body;
   const validFields = ['name', 'phone', 'email'];
   if (!validFields.includes(field)) return res.status(400).send('Invalid field');
-  
+
+  dbOperationCounter.inc({ operation: 'update' });
+
   await client.query(`UPDATE people SET ${field} = $1 WHERE id = $2`, [value, id]);
   res.sendStatus(200);
 });
 
 app.delete('/delete/:id', async (req, res) => {
   const { id } = req.params;
+  dbOperationCounter.inc({ operation: 'delete' });
+
   await client.query('DELETE FROM people WHERE id = $1', [id]);
   res.sendStatus(200);
 });
