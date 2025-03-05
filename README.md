@@ -17,7 +17,7 @@
 
 This project deploys the following components:
 
--   **Node.js App:** A web application that allows users to upload and retrieve images, utilizing a PostgreSQL database for storage.
+-   **Node.js App:** A web application that allows users to upload and retrieve images, utilizing a PostgreSQL database for storage. NOTE: The scope of the project doesn't comprise development skills about the application itself. This is intended to show the configuration of Grafana and Prometheus as well as the configuration to scrape metrics. 
 -   **PostgreSQL:** A robust relational database management system used to persist image data.
 -   **Prometheus:** A powerful monitoring and alerting toolkit that collects metrics from the deployed applications and infrastructure.
 -   **Grafana:** A data visualization and monitoring tool that provides dashboards to visualize metrics collected by Prometheus.
@@ -363,6 +363,7 @@ This project deploys the following components:
     ![Setup](./resources/grafana_k8s.jpg)
 
     **Add ServiceMonitor for Node.js App:**
+    The metrics exported by the application really depends on you. I added metrics to count the total of requests and the count of type of requests to DB. This may be meaningless but it's out of the scope of this project.
 
     Create `exporters/k8s-app-exporter-values.yaml`:
 
@@ -391,7 +392,7 @@ This project deploys the following components:
     ```
     ![Setup](./resources/metrics_k8s-app.jpg)
     
-12. **Install Kubernetes Dashboard:**
+13. **Install Kubernetes Dashboard:**
 
     Add the Helm repository:
 
