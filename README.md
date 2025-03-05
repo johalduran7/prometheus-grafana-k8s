@@ -173,7 +173,7 @@ This project deploys the following components:
     ```
 
     As you can see, port 32442 was assigned to Minikube, and the node can be accessed from `http://192.168.49.2:32442` in your local machine's web browser.
-
+    ![Setup](./resources/nodejs_k8s_app.jpg)
 8.  **Update the Node.js Application:**
 
     When you make changes to the Node.js application code (`app.js`), rebuild the Docker image and apply the changes using Terraform. Then, restart the deployment:
@@ -387,7 +387,7 @@ This project deploys the following components:
     ```bash
     kubectl apply -f ./exporters/k8s-app-exporter-values.yaml
     ```
-
+    ![Setup](./resources/grafana_k8s.jpg)
 12. **Install Kubernetes Dashboard:**
 
     Add the Helm repository:
