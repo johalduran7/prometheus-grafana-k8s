@@ -6,8 +6,8 @@
 
 -   Minikube along with a hypervisor like VirtualBox or Hyperkit.
 -   If you plan to run Minikube on VirtualBox, ensure your virtual machine is configured with a minimum of:
-    -      8GB of RAM
-    -      4 vCPUs
+    - 8GB of RAM
+    - 4 vCPUs
 -   AWS CLI (Amazon Web Services Command Line Interface)
 -   Terraform
 
@@ -360,7 +360,7 @@ This project deploys the following components:
     ```bash
     kubectl get servicemonitor
     ```
-
+    ![Setup](./resources/grafana_k8s.jpg)
     **Add ServiceMonitor for Node.js App:**
 
     Create `exporters/k8s-app-exporter-values.yaml`:
@@ -388,7 +388,7 @@ This project deploys the following components:
     ```bash
     kubectl apply -f ./exporters/k8s-app-exporter-values.yaml
     ```
-    ![Setup](./resources/grafana_k8s.jpg)
+    ![Setup](./resources/metrics_k8s-app.jpg)
 12. **Install Kubernetes Dashboard:**
 
     Add the Helm repository:
