@@ -321,6 +321,8 @@ This project deploys the following components:
     6.  Manually configure scrape jobs.
     7.  Use Pushgateway.
 
+    I'll use Exporters
+
     **Install PostgreSQL Exporter:**
 
     ```bash
@@ -335,6 +337,13 @@ This project deploys the following components:
     ```
 
     Check if the exporter has detected PostgreSQL by visiting `http://localhost:9187/metrics`. Look for `pg_up 1`.
+
+    you should see something along these lines: 
+    ```bash
+    # HELP pg_up Whether the last scrape of metrics from PostgreSQL was able to connect to the server (1 for yes, 0 for no).
+    # TYPE pg_up gauge
+    pg_up 1
+    ```
 
     Deploy a ServiceMonitor for the PostgreSQL exporter:
 
