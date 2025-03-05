@@ -9,6 +9,7 @@
     -      8GB of RAM
     -      4 vCPUs
 -   AWS CLI (Amazon Web Services Command Line Interface)
+-   Terraform
 
 ## Minikube Setup
 
