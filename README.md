@@ -361,6 +361,7 @@ This project deploys the following components:
     kubectl get servicemonitor
     ```
     ![Setup](./resources/grafana_k8s.jpg)
+
     **Add ServiceMonitor for Node.js App:**
 
     Create `exporters/k8s-app-exporter-values.yaml`:
@@ -389,6 +390,7 @@ This project deploys the following components:
     kubectl apply -f ./exporters/k8s-app-exporter-values.yaml
     ```
     ![Setup](./resources/metrics_k8s-app.jpg)
+    
 12. **Install Kubernetes Dashboard:**
 
     Add the Helm repository:
