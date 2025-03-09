@@ -67,7 +67,7 @@ This project deploys the following components:
     Create a dedicated namespace for the project:
 
     ```bash
-    kubectl apply -f ./k8s/namespace.yml
+    kubectl apply -f ./k8s-namespace/namespace.yml
     # or
     kubectl create namespace prometheus-grafana-k8s
     ```
