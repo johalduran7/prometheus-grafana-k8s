@@ -1,7 +1,7 @@
 # Prometheus-Grafana-K8s Project
 
 ## Minikube Setup
-
+![Setup](./resources/k8s_drawio.jpg)
 **Prerequisites:**
 
 -   Minikube along with a hypervisor like VirtualBox or Hyperkit.
@@ -14,7 +14,6 @@
 ## Minikube Setup
 
 ### Deployments
-
 
 This project deploys the following components:
 
