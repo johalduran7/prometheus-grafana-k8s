@@ -15,6 +15,7 @@
 
 ### Deployments
 ![Setup](./resources/k8s_drawio.jpg)
+
 This project deploys the following components:
 
 -   **Node.js App:** A web application that allows users to upload and retrieve images, utilizing a PostgreSQL database for storage. NOTE: The scope of the project doesn't comprise development skills about the application itself. This is intended to show the configuration of Grafana and Prometheus as well as the configuration to scrape metrics. 
