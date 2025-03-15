@@ -14,7 +14,7 @@
 ## Minikube Setup
 
 ### Deployments
-![Setup](./resources/k8s_drawio.jpg)
+
 
 This project deploys the following components:
 
