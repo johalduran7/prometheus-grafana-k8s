@@ -13,3 +13,5 @@ prometheus:
           resources:
             requests:
               storage: 1Gi
+alertmanager: # Disabling alertmanager because of the number of pods exceeded 17
+  enabled: false

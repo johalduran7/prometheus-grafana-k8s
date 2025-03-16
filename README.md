@@ -426,6 +426,10 @@ This project deploys the following components:
     ```bash
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout dashboard.key -out dashboard.crt -subj "/CN=<your-dashboard-domain>/O=<your-organization>"
     ```
+    Create a Secret:
+    ```bash
+    kubectl create secret tls kubernetes-dashboard-tls --cert=dashboard.crt --key=dashboard.key --namespace=kubernetes-dashboard
+    ```
 
     Create a service account, role, and token:
     ```bash
